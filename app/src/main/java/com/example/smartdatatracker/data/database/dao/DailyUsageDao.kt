@@ -14,5 +14,5 @@ interface DailyUsageDao {
     fun getAllDailyUsages(): Flow<List<DailyUsage>>
 
     @Query("SELECT * FROM daily_usage WHERE date = :date LIMIT 1")
-    suspend fun getDailyUsageByDate(date: String): DailyUsage?
+    suspend fun getDailyUsageByDate(date: Long): DailyUsage?
 }

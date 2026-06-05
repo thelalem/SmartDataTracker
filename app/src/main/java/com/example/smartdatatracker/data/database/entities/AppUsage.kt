@@ -2,7 +2,7 @@ package com.example.smartdatatracker.data.database.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.sql.Date
+
 
 @Entity(tableName = "app_usage")
 data class AppUsage (
