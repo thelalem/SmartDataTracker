@@ -9,5 +9,5 @@ data class UsageAdjustment(
     val id: Int = 0,
     val date: Long,
     val adjustmentGB: Long,
-    val adjustmentReason: String
+    val adjustmentReason: String //hela
 )
