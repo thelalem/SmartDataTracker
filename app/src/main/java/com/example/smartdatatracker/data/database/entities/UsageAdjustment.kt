@@ -8,6 +8,6 @@ data class UsageAdjustment(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val date: Long,
-    val adjustmentGB: Long,
+    val adjustmentMB: Long,
     val adjustmentReason: String
 )

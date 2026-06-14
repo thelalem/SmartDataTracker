@@ -11,6 +11,6 @@ data class AppUsage (
     val date: Long,
     val packageName: String,
     val appName: String,
-    val usageGB: Long
+    val usageMB: Long
 
 )

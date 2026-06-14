@@ -8,7 +8,7 @@ data class DailyUsage(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val date: Long,
-    val phoneUsageGB: Long,
-    val hotspotUsageGB: Long,
-    val totalUsageGB: Long
+    val phoneUsageMB: Long,
+    val hotspotUsageMB: Long,
+    val totalUsageMB: Long
 )

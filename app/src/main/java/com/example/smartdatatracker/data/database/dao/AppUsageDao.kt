@@ -11,7 +11,7 @@ interface AppUsageDao {
 
     @Query("""
         Select * from app_usage
-        Order by usageGB DESC
+        Order by usageMB DESC
     """)
     fun getAllApps(): Flow<List<AppUsage>>
 }
