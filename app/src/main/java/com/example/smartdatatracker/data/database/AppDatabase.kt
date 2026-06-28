@@ -23,4 +23,4 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyUsageDao(): DailyUsageDao
     abstract fun appUsageDao(): AppUsageDao
     abstract fun usageAdjustmentDao(): UsageAdjustmentDao
-}
+}//
