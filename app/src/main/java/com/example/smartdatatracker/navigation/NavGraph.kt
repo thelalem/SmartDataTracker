@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.smartdatatracker.ui.screens.DashboardScreen
-import com.example.smartdatatracker.ui.screens.UsageScreen
+import com.example.smartdatatracker.ui.screens.UsageHistoryScreen
 import com.example.smartdatatracker.ui.screens.SettingsScreen
 import kotlinx.serialization.Serializable
 
@@ -31,7 +31,7 @@ fun AppNavHost(navController: NavHostController) {
             DashboardScreen()
         }
         composable<Screen.Usage> {
-            UsageScreen()
+            UsageHistoryScreen()
         }
         composable<Screen.Settings> {
             SettingsScreen()

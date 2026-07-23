@@ -23,14 +23,16 @@ class SettingsViewModel(
     )
 
     fun saveMonthlyLimit(limit: Int) {
+        android.util.Log.d("SettingsViewModel", "Saving monthly limit: $limit")
         viewModelScope.launch {
             repository.saveMonthlyLimit(limit)
         }
     }
 
-    fun saveBillingDate(date: Int) {
+    fun saveBillingStartDay(day: Int) {
+        android.util.Log.d("SettingsViewModel", "Saving billing start day: $day")
         viewModelScope.launch {
-            repository.saveBillingDate(date)
+            repository.saveBillingStartDay(day)
         }
     }
 

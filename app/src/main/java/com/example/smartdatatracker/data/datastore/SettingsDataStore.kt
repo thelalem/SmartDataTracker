@@ -15,7 +15,7 @@ class SettingsDataStore(
     companion object {
         val MONTHLY_LIMIT = intPreferencesKey("monthly_limit")
 
-        val BILLING_DATE = intPreferencesKey("billing_date")
+        val BILLING_START_DAY = intPreferencesKey("billing_start_day")
 
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
 
@@ -28,9 +28,9 @@ class SettingsDataStore(
         }
     }
 
-    suspend fun saveBillingDate(date: Int) {
+    suspend fun saveBillingStartDay(day: Int) {
         context.dataStore.edit { prefs ->
-            prefs[BILLING_DATE] = date
+            prefs[BILLING_START_DAY] = day
         }
     }
 
@@ -53,7 +53,7 @@ class SettingsDataStore(
     val settingsFlow = context.dataStore.data.map { prefs->
         UserSettings(
             monthlyLimitGB = prefs[MONTHLY_LIMIT] ?: 30,
-            billingDate = prefs[BILLING_DATE] ?: 0,
+            billingStartDay = prefs[BILLING_START_DAY] ?: 1,
             notificationsEnabled = prefs[NOTIFICATIONS_ENABLED] ?: true,
             darkMode = prefs[DARK_MODE] ?: false
         )

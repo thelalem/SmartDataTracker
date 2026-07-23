@@ -5,8 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "daily_usage")
 data class DailyUsage(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey
     val date: Long,
     val phoneUsageMB: Long,
     val hotspotUsageMB: Long,

@@ -15,4 +15,7 @@ interface DailyUsageDao {
 
     @Query("SELECT * FROM daily_usage WHERE date = :date LIMIT 1")
     suspend fun getDailyUsageByDate(date: Long): DailyUsage?
+
+    @Query("SELECT * FROM daily_usage ORDER BY date DESC")
+    suspend fun getDailyUsageList(): List<DailyUsage>
 }

@@ -17,7 +17,8 @@ object DatabaseProvider {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "smart_data_tracker_db"
-            ).build()
+            ).fallbackToDestructiveMigration()
+                .build()
 
             INSTANCE = instance
 

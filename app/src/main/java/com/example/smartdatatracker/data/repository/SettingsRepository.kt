@@ -13,10 +13,10 @@ class SettingsRepository (
         dataStore.saveMonthlyLimit(limit)
     }
 
-    suspend fun saveBillingDate(
-        date:Int
+    suspend fun saveBillingStartDay(
+        day: Int
     ){
-        dataStore.saveBillingDate(date)
+        dataStore.saveBillingStartDay(day)
     }
 
     suspend fun saveNotification(
