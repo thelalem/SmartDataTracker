@@ -16,6 +16,7 @@ dataStore = "1.1.2"
 work = "2.11.2"
 vico = "3.2.3"
 
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

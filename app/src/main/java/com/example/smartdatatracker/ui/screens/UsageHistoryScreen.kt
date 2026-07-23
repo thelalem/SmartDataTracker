@@ -2,21 +2,29 @@ package com.example.smartdatatracker.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -78,20 +86,20 @@ fun UsageHistoryScreen(
                     )
                 )
         ) {
-            // Tab Row
-            TabRow(
+            // ✅ Correctly typed PrimaryTabRow with custom indicator
+            PrimaryTabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = Color.Transparent,
-                indicator = { tabPositions ->
-                    if (selectedTab < tabPositions.size) {
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            height = 3.dp,
-                            color = Color(0xFF6C63FF)
-                        )
-                    }
+                indicator = {
+                    // 'this' is TabIndicatorScope – tabIndicatorOffset(selectedTabIndex: Int) is available
+                    Box(
+                        modifier = Modifier
+                            .tabIndicatorOffset(selectedTab)
+                            .height(3.dp)
+                            .background(Color(0xFF6C63FF))
+                    )
                 },
-                divider = {}
+                divider = {} // remove default divider
             ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
@@ -119,6 +127,7 @@ fun UsageHistoryScreen(
     }
 }
 
+// ---------- Overview Tab ----------
 @Composable
 fun HistoryOverviewTab(history: List<DailyUsage>) {
     LazyColumn(
@@ -127,7 +136,6 @@ fun HistoryOverviewTab(history: List<DailyUsage>) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            // Summary Cards
             if (history.isNotEmpty()) {
                 val total = history.sumOf { it.totalUsageMB }
                 val average = total / history.size
@@ -148,13 +156,11 @@ fun HistoryOverviewTab(history: List<DailyUsage>) {
                         modifier = Modifier.weight(1f),
                         title = "Avg Daily",
                         value = formatUsage(average),
-                        icon = Icons.Default.TrendingUp,
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
                         color = Color(0xFF00C853)
                     )
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -178,12 +184,11 @@ fun HistoryOverviewTab(history: List<DailyUsage>) {
         }
 
         item {
-            // Chart
             if (history.isNotEmpty()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(280.dp),
+                        .height(300.dp),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFF1A1F35).copy(alpha = 0.8f)
@@ -194,20 +199,36 @@ fun HistoryOverviewTab(history: List<DailyUsage>) {
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        Text(
-                            text = "📈 Usage Trend",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HistoryModernBarChart(history.take(7).reversed())
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "📈 Usage Trend",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Last 7 days",
+                                color = Color.White.copy(alpha = 0.4f),
+                                fontSize = 11.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            CleanBarChart(history.take(7).reversed())
+                        }
                     }
                 }
             }
         }
 
         item {
-            // Quick Stats
             if (history.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -227,13 +248,11 @@ fun HistoryOverviewTab(history: List<DailyUsage>) {
                             color = Color.White
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-
                         val stats = listOf(
                             "Highest" to formatUsage(history.maxByOrNull { it.totalUsageMB }?.totalUsageMB ?: 0),
                             "Lowest" to formatUsage(history.minByOrNull { it.totalUsageMB }?.totalUsageMB ?: 0),
                             "Average" to formatUsage(history.map { it.totalUsageMB }.average().toLong())
                         )
-
                         stats.forEach { (label, value) ->
                             HistoryQuickStatRow(label, value)
                         }
@@ -244,6 +263,7 @@ fun HistoryOverviewTab(history: List<DailyUsage>) {
     }
 }
 
+// ---------- Summary Card ----------
 @Composable
 fun HistorySummaryCard(
     modifier: Modifier = Modifier,
@@ -295,6 +315,7 @@ fun HistorySummaryCard(
     }
 }
 
+// ---------- Quick Stat Row ----------
 @Composable
 fun HistoryQuickStatRow(label: String, value: String) {
     Row(
@@ -317,75 +338,185 @@ fun HistoryQuickStatRow(label: String, value: String) {
     }
 }
 
+// ---------- Clean Line Chart ----------
+// Smooth animated line/area chart drawn on a Canvas. Sizing comes straight from
+// the Canvas's own measured bounds (no hardcoded pixel heights), so it can never
+// overflow/clip like a manually-stacked layout can. The curve draws in left-to-right,
+// the peak point is highlighted, and gridlines give a readable scale.
 @Composable
-fun HistoryModernBarChart(data: List<DailyUsage>) {
-    val maxUsage = (data.maxByOrNull { it.totalUsageMB }?.totalUsageMB ?: 1L).coerceAtLeast(1L)
-    var animProgress by remember { mutableFloatStateOf(0f) }
+fun CleanBarChart(data: List<DailyUsage>) {
+    if (data.isEmpty()) return
 
-    LaunchedEffect(Unit) {
-        animProgress = 1f
+    val maxUsage = (data.maxByOrNull { it.totalUsageMB }?.totalUsageMB ?: 1L).toFloat()
+    val minUsage = (data.minByOrNull { it.totalUsageMB }?.totalUsageMB ?: 0L).toFloat()
+    val range = (maxUsage - minUsage).coerceAtLeast(1f)
+    val peakIndex = data.indexOfFirst { it.totalUsageMB.toFloat() == maxUsage }
+
+    val animProgress by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
+        label = "lineChartAnim"
+    )
+
+    val lineColor = Color(0xFF6C63FF)
+    val peakColor = Color(0xFFFF6B6B)
+    val gridColor = Color.White.copy(alpha = 0.06f)
+    val peakLabelPaint = remember {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.CENTER
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
     }
+    val peakLabelText = formatUsage(maxUsage.toLong())
 
-    Row(
-        modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        data.forEach { day ->
-            val barHeight = (day.totalUsageMB.toFloat() / maxUsage.toFloat() * 150)
-            val animatedHeight = barHeight * animProgress
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 6.dp)
+                    .padding(top = 22.dp, bottom = 4.dp)
             ) {
-                // Value label
-                Text(
-                    text = formatUsage(day.totalUsageMB),
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.width(40.dp)
-                )
+                val w = size.width
+                val h = size.height
 
-                Spacer(modifier = Modifier.height(4.dp))
+                // Gridlines for scale reference
+                val gridLines = 3
+                repeat(gridLines + 1) { i ->
+                    val y = h / gridLines * i
+                    drawLine(
+                        color = gridColor,
+                        start = Offset(0f, y),
+                        end = Offset(w, y),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
 
-                // Bar with gradient
-                Box(
-                    modifier = Modifier
-                        .width(24.dp)
-                        .height(animatedHeight.dp)
-                        .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = if (day.totalUsageMB == maxUsage) {
-                                    listOf(Color(0xFFFF6B6B), Color(0xFFFFD93D))
-                                } else {
-                                    listOf(Color(0xFF6C63FF), Color(0xFF3D3B8A))
-                                }
-                            )
+                if (data.size == 1) {
+                    val fraction = ((data[0].totalUsageMB.toFloat() - minUsage) / range).coerceIn(0.08f, 1f)
+                    val center = Offset(w / 2f, h - h * fraction * animProgress)
+                    drawCircle(color = lineColor, radius = 5.dp.toPx(), center = center)
+                    return@Canvas
+                }
+
+                val stepX = w / (data.size - 1)
+                val points = data.mapIndexed { index, day ->
+                    val fraction = ((day.totalUsageMB.toFloat() - minUsage) / range).coerceIn(0.08f, 1f)
+                    Offset(stepX * index, h - h * fraction)
+                }
+
+                val linePath = Path().apply {
+                    moveTo(points.first().x, points.first().y)
+                    for (i in 0 until points.size - 1) {
+                        val p0 = points[i]
+                        val p1 = points[i + 1]
+                        val midX = (p0.x + p1.x) / 2f
+                        cubicTo(midX, p0.y, midX, p1.y, p1.x, p1.y)
+                    }
+                }
+
+                // Reveal the curve left-to-right as it animates in
+                clipRect(left = 0f, top = 0f, right = w * animProgress, bottom = h) {
+                    val fillPath = Path().apply {
+                        addPath(linePath)
+                        lineTo(points.last().x, h)
+                        lineTo(points.first().x, h)
+                        close()
+                    }
+                    drawPath(
+                        path = fillPath,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(lineColor.copy(alpha = 0.35f), lineColor.copy(alpha = 0f))
                         )
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Date label
-                Text(
-                    text = SimpleDateFormat("dd", Locale.US).format(Date(day.date)),
-                    color = Color.White.copy(alpha = 0.5f),
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = SimpleDateFormat("EEE", Locale.US).format(Date(day.date)),
-                    color = Color.White.copy(alpha = 0.3f),
-                    fontSize = 10.sp
-                )
+                    )
+                    drawPath(
+                        path = linePath,
+                        color = lineColor,
+                        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+                    points.forEachIndexed { index, p ->
+                        val isPeak = index == peakIndex
+                        drawCircle(
+                            color = if (isPeak) peakColor else lineColor,
+                            radius = if (isPeak) 5.dp.toPx() else 3.dp.toPx(),
+                            center = p
+                        )
+                        drawCircle(
+                            color = Color(0xFF1A1F35),
+                            radius = if (isPeak) 2.2.dp.toPx() else 1.3.dp.toPx(),
+                            center = p
+                        )
+                        if (isPeak) {
+                            peakLabelPaint.textSize = 11.sp.toPx()
+                            drawContext.canvas.nativeCanvas.drawText(
+                                peakLabelText,
+                                p.x,
+                                p.y - 12.dp.toPx(),
+                                peakLabelPaint
+                            )
+                        }
+                    }
+                }
             }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            data.forEach { day ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = SimpleDateFormat("dd", Locale.US).format(Date(day.date)),
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = SimpleDateFormat("EEE", Locale.US).format(Date(day.date)),
+                        color = Color.White.copy(alpha = 0.3f),
+                        fontSize = 8.sp,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = formatUsage(minUsage.toLong()),
+                color = Color.White.copy(alpha = 0.25f),
+                fontSize = 8.sp
+            )
+            Text(
+                text = formatUsage(maxUsage.toLong()),
+                color = Color.White.copy(alpha = 0.25f),
+                fontSize = 8.sp
+            )
         }
     }
 }
 
+// ---------- History Records Tab ----------
 @Composable
 fun HistoryRecordsTab(history: List<DailyUsage>) {
     LazyColumn(
@@ -394,28 +525,19 @@ fun HistoryRecordsTab(history: List<DailyUsage>) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(history) { entry ->
-            HistoryAnimatedItem {
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn() + slideInVertically(
+                    initialOffsetY = { it / 2 }
+                )
+            ) {
                 HistoryRecordItem(entry)
             }
         }
     }
 }
 
-@Composable
-fun HistoryAnimatedItem(
-    content: @Composable () -> Unit
-) {
-    val transition = updateTransition(targetState = true, label = "item")
-    transition.AnimatedVisibility(
-        visible = { it },
-        enter = fadeIn() + slideInVertically(
-            initialOffsetY = { it / 2 }
-        )
-    ) {
-        content()
-    }
-}
-
+// ---------- Record Item ----------
 @Composable
 fun HistoryRecordItem(entry: DailyUsage) {
     val dateStr = SimpleDateFormat("EEEE, MMM d", Locale.US).format(Date(entry.date))
@@ -475,7 +597,6 @@ fun HistoryRecordItem(entry: DailyUsage) {
                     }
                 }
             }
-
             Text(
                 text = formatUsage(entry.totalUsageMB),
                 color = Color(0xFF6C63FF),
@@ -486,6 +607,7 @@ fun HistoryRecordItem(entry: DailyUsage) {
     }
 }
 
+// ---------- Statistics Tab ----------
 @Composable
 fun HistoryStatisticsTab(history: List<DailyUsage>) {
     LazyColumn(
