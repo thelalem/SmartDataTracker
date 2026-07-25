@@ -23,28 +23,17 @@ class UsageCollector(
         startTime: Long,
         endTime: Long = System.currentTimeMillis()
     ): Long {
-        val networkStats = try {
-            networkStatsManager.querySummary(
+        return try {
+            val bucket = networkStatsManager.querySummaryForDevice(
                 ConnectivityManager.TYPE_MOBILE,
-                null, // Passing null is standard for non-system apps
+                null,
                 startTime,
                 endTime
             )
-        } catch (e: SecurityException) {
-            return -1L // Signal error or missing permission
+            (bucket.rxBytes + bucket.txBytes) / (1024 * 1024)
+        } catch (e: Exception) {
+            -1L
         }
-
-        var totalBytes = 0L
-        val bucket = android.app.usage.NetworkStats.Bucket()
-
-        while (networkStats.hasNextBucket()) {
-            networkStats.getNextBucket(bucket)
-            totalBytes += bucket.rxBytes
-            totalBytes += bucket.txBytes
-        }
-
-        networkStats.close()
-        return totalBytes / (1024 * 1024)
     }
 
     private fun getStartOfDay(): Long {

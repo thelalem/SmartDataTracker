@@ -454,7 +454,7 @@ fun CleanBarChart(data: List<DailyUsage>) {
                         )
                         if (isPeak) {
                             peakLabelPaint.textSize = 11.sp.toPx()
-                            drawContext.canvas.nativeCanvas.drawText(
+                            drawContext.canvas.ginativeCanvas.drawText(
                                 peakLabelText,
                                 p.x,
                                 p.y - 12.dp.toPx(),
